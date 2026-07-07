@@ -71,6 +71,7 @@ import { createPromptInputTransientState } from "./prompt-input/transient-state"
 import { showToast } from "@/utils/toast"
 import { ImagePreview } from "@opencode-ai/ui/image-preview"
 import type { ReferenceInfo } from "@opencode-ai/sdk/v2/client"
+import { VoiceInput } from "./voice-input"
 
 export type PromptInputState = ReturnType<typeof usePrompt>
 
@@ -1643,6 +1644,15 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       aria-label={language.t("prompt.action.attachFile")}
                     />
                   </TooltipV2>
+                  <VoiceInput
+                    onTranscript={(text) => {
+                      if (editorRef) {
+                        editorRef.innerText = text
+                        editorRef.dispatchEvent(new Event("input", { bubbles: true }))
+                      }
+                    }}
+                    disabled={store.mode !== "normal"}
+                  />
                   <Show when={showAgentControl()}>
                     <ComposerAgentControl state={agentControlState()} />
                   </Show>
@@ -1889,6 +1899,15 @@ export const PromptInput: Component<PromptInputProps> = (props) => {
                       <Icon name="plus" class="size-4.5" />
                     </Button>
                   </TooltipKeybind>
+                  <VoiceInput
+                    onTranscript={(text) => {
+                      if (editorRef) {
+                        editorRef.innerText = text
+                        editorRef.dispatchEvent(new Event("input", { bubbles: true }))
+                      }
+                    }}
+                    disabled={store.mode !== "normal"}
+                  />
                 </div>
               </div>
             </div>
