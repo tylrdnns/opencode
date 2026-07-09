@@ -26,6 +26,9 @@ jobs:
         run: |
           cd packages/opencode
           bun run build -- --single
+        env:
+          OPENCODE_CHANNEL: latest
+          OPENCODE_VERSION: "1.0.0"
 
       - name: Package binary
         run: |
