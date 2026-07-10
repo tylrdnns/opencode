@@ -37,13 +37,14 @@ jobs:
 
       - name: Create/Update release
         run: |
-          gh release delete latest --yes 2>/dev/null || true
-          git push origin :refs/tags/latest 2>/dev/null || true
-
+          # Create release if it doesn't exist, then upload/overwrite the asset
           gh release create latest \
-            /tmp/opencode-linux-x64.tar.gz \
             --title "Latest Build" \
             --notes "Automated build from dev branch" \
-            --prerelease
+            --prerelease 2>/dev/null || true
+
+          gh release upload latest \
+            /tmp/opencode-linux-x64.tar.gz \
+            --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
