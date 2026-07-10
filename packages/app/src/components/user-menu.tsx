@@ -1,28 +1,31 @@
-import { createResource, Show, type Component } from "solid-js"
-import { DropdownMenu } from "@opencode-ai/ui/dropdown-menu"
+import { createSignal, onMount, Show, type Component } from "solid-js"
 import { IconButton } from "@opencode-ai/ui/icon-button"
 import { Tooltip } from "@opencode-ai/ui/tooltip"
 
 interface UserInfo {
   name: string
   email: string
-}
-
-async function fetchUserInfo(): Promise<UserInfo | null> {
-  try {
-    const resp = await fetch("/_platform/user")
-    if (!resp.ok) return null
-    return resp.json()
-  } catch {
-    return null
-  }
+  username: string
 }
 
 export const UserMenu: Component = () => {
-  const [user] = createResource(fetchUserInfo)
+  const [user, setUser] = createSignal<UserInfo | null>(null)
+  const [showMenu, setShowMenu] = createSignal(false)
+
+  onMount(async () => {
+    try {
+      const resp = await fetch("/_platform/user")
+      if (resp.ok) {
+        const data = await resp.json()
+        setUser(data)
+      }
+    } catch {}
+  })
 
   const initials = () => {
-    const name = user()?.name ?? user()?.email ?? ""
+    const u = user()
+    if (!u) return ""
+    const name = u.name || u.email
     const parts = name.split(/[\s@]/).filter(Boolean)
     if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
     return name.slice(0, 2).toUpperCase()
@@ -30,12 +33,12 @@ export const UserMenu: Component = () => {
 
   return (
     <Show when={user()}>
-      <DropdownMenu>
+      <div class="relative">
         <Tooltip placement="right" value={user()!.name || user()!.email}>
-          <DropdownMenu.Trigger
-            as={IconButton}
+          <IconButton
             variant="ghost"
             size="large"
+            onClick={() => setShowMenu(!showMenu())}
             aria-label={`User: ${user()!.name || user()!.email}`}
           >
             <div
@@ -47,24 +50,36 @@ export const UserMenu: Component = () => {
             >
               {initials()}
             </div>
-          </DropdownMenu.Trigger>
+          </IconButton>
         </Tooltip>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content class="min-w-[200px]">
-            <div class="px-3 py-2 border-b border-[var(--v2-border-border-subtle)]">
-              <div class="text-sm font-medium">{user()!.name}</div>
-              <div class="text-xs opacity-60">{user()!.email}</div>
+        <Show when={showMenu()}>
+          <div
+            class="absolute left-12 bottom-0 z-50 min-w-[200px] rounded-lg border shadow-lg"
+            style={{
+              background: "var(--v2-background-bg-surface, #24283b)",
+              "border-color": "var(--v2-border-border-subtle, #3b4261)",
+            }}
+          >
+            <div class="px-3 py-2 border-b" style={{ "border-color": "var(--v2-border-border-subtle, #3b4261)" }}>
+              <div class="text-sm font-medium" style={{ color: "var(--v2-text-text-base, #c0caf5)" }}>
+                {user()!.name}
+              </div>
+              <div class="text-xs" style={{ color: "var(--v2-text-text-muted, #565f89)" }}>
+                {user()!.email}
+              </div>
             </div>
-            <DropdownMenu.Item
-              onSelect={() => {
+            <button
+              class="w-full px-3 py-2 text-left text-sm hover:opacity-80 cursor-pointer"
+              style={{ color: "var(--v2-text-text-base, #c0caf5)" }}
+              onClick={() => {
                 window.location.href = "/_platform/logout"
               }}
             >
               Sign out
-            </DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu>
+            </button>
+          </div>
+        </Show>
+      </div>
     </Show>
   )
 }
