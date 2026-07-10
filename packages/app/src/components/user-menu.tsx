@@ -1,4 +1,4 @@
-import { createSignal, onMount, Show, type Component } from "solid-js"
+import { createSignal, onCleanup, onMount, Show, type Component } from "solid-js"
 import { Tooltip } from "@opencode-ai/ui/tooltip"
 
 interface UserInfo {
@@ -10,6 +10,13 @@ interface UserInfo {
 export const UserMenu: Component = () => {
   const [user, setUser] = createSignal<UserInfo | null>(null)
   const [showMenu, setShowMenu] = createSignal(false)
+
+  const closeMenu = (e: MouseEvent) => {
+    const target = e.target as HTMLElement
+    if (!target.closest("[data-user-menu]")) setShowMenu(false)
+  }
+  onMount(() => document.addEventListener("click", closeMenu))
+  onCleanup(() => document.removeEventListener("click", closeMenu))
 
   onMount(async () => {
     try {
@@ -32,7 +39,7 @@ export const UserMenu: Component = () => {
 
   return (
     <Show when={user()}>
-      <div class="relative">
+      <div class="relative" data-user-menu>
         <Tooltip placement="right" value={user()!.name || user()!.email}>
           <button
             class="size-8 rounded-md flex items-center justify-center hover:opacity-80 cursor-pointer"
@@ -52,10 +59,12 @@ export const UserMenu: Component = () => {
         </Tooltip>
         <Show when={showMenu()}>
           <div
-            class="absolute left-12 bottom-0 z-50 min-w-[200px] rounded-lg border shadow-lg"
+            class="fixed z-[99999] min-w-[200px] rounded-lg border shadow-lg"
             style={{
               background: "var(--v2-background-bg-surface, #24283b)",
               "border-color": "var(--v2-border-border-subtle, #3b4261)",
+              bottom: "80px",
+              left: "56px",
             }}
           >
             <div class="px-3 py-2 border-b" style={{ "border-color": "var(--v2-border-border-subtle, #3b4261)" }}>
