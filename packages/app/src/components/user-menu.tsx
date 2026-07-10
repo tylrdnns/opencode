@@ -1,5 +1,4 @@
 import { createSignal, onMount, Show, type Component } from "solid-js"
-import { IconButton } from "@opencode-ai/ui/icon-button"
 import { Tooltip } from "@opencode-ai/ui/tooltip"
 
 interface UserInfo {
@@ -35,9 +34,8 @@ export const UserMenu: Component = () => {
     <Show when={user()}>
       <div class="relative">
         <Tooltip placement="right" value={user()!.name || user()!.email}>
-          <IconButton
-            variant="ghost"
-            size="large"
+          <button
+            class="size-8 rounded-md flex items-center justify-center hover:opacity-80 cursor-pointer"
             onClick={() => setShowMenu(!showMenu())}
             aria-label={`User: ${user()!.name || user()!.email}`}
           >
@@ -50,7 +48,7 @@ export const UserMenu: Component = () => {
             >
               {initials()}
             </div>
-          </IconButton>
+          </button>
         </Tooltip>
         <Show when={showMenu()}>
           <div
